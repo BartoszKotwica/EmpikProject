@@ -1,32 +1,32 @@
 package pl.coderslab.project.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@Entity
+
 @Getter
 @Setter
-@Table(name = "userData")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GitHubUserData {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
-    @NotNull
+    @NonNull
+    private Long id;
+    @NonNull
     private String login;
-    @NotNull
-    private String name;
-    @NotNull
-    private String type;
-    @NotNull
-    private String avatarUrl;
-    @NotNull
-    private Date createdAt;
 
+    private String name;
+
+    private String type;
+    @JsonProperty("avatar_url")
+    private String avatarUrl;
+    @JsonProperty("created_at")
+    private Date createdAt;
+    @JsonProperty("followers")
     private Long followers = 0L;
+    @JsonProperty("public_repos")
     private Long publicRepos = 0L;
 }

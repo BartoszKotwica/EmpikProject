@@ -2,7 +2,7 @@ package pl.coderslab.project.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.coderslab.project.entity.ApiCall;
+import pl.coderslab.project.entity.User;
 import pl.coderslab.project.repository.ApiCallRepository;
 
 import java.util.Optional;
@@ -16,12 +16,12 @@ public class ApiCallService {
     }
 
     public void incrementRequestCount(String login) {
-        Optional<ApiCall> optionalApiCall = apiCallRepository.findByLogin(login);
-        ApiCall apiCall = optionalApiCall.orElseGet(() -> {
-            ApiCall newApiCall = new ApiCall();
-            newApiCall.setLogin(login);
-            newApiCall.setRequestCount(0L);
-            return newApiCall;
+        Optional<User> optionalApiCall = apiCallRepository.findByLogin(login);
+        User apiCall = optionalApiCall.orElseGet(() -> {
+            User newUser = new User();
+            newUser.setLogin(login);
+            newUser.setRequestCount(0L);
+            return newUser;
         });
 
         apiCall.setRequestCount(apiCall.getRequestCount() + 1);
@@ -29,7 +29,7 @@ public class ApiCallService {
     }
 
     public Long getRequestCount(String login) {
-        Optional<ApiCall> optionalApiCall = apiCallRepository.findByLogin(login);
-        return optionalApiCall.map(ApiCall::getRequestCount).orElse(0L);
+        Optional<User> optionalApiCall = apiCallRepository.findByLogin(login);
+        return optionalApiCall.map(User::getRequestCount).orElse(0L);
     }
 }

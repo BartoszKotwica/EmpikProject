@@ -37,7 +37,7 @@ public class UserController {
         GitHubUserData gitHubUserData = gitHubApiService.getGitHubUserData(login);
 
         if (gitHubUserData == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.internalServerError()
                     .body("Nie udało się pobrać danych użytkownika GitHub.");
         }
 
@@ -49,14 +49,15 @@ public class UserController {
 
         // Tworzenie obiektu przechowującego odpowiednie dane
         UserInfo userInfo = new UserInfo(
-                gitHubUserData.getId(),
+                gitHubUserData.getId().toString(),
                 gitHubUserData.getLogin(),
                 gitHubUserData.getName(),
                 gitHubUserData.getType(),
                 gitHubUserData.getAvatarUrl(),
                 gitHubUserData.getCreatedAt(),
                 calculations
-        );
+        )
+        ;
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
@@ -66,7 +67,7 @@ public class UserController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             String jsonResponse = objectMapper.writeValueAsString(userInfo);
-            return new ResponseEntity(jsonResponse, headers, HttpStatus.OK);
+            return ResponseEntity.ok().headers(headers).body(jsonResponse);
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Błąd podczas przetwarzania danych.");

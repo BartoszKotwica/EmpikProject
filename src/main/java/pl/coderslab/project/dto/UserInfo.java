@@ -1,10 +1,9 @@
-package pl.coderslab.project.entity;
+package pl.coderslab.project.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Getter
@@ -31,4 +30,3 @@ public class UserInfo {
         this.calculations = calculations;
     }
 }
-

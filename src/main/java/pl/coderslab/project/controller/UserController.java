@@ -3,6 +3,7 @@ package pl.coderslab.project.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,40 +12,47 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import pl.coderslab.project.entity.GitHubUserData;
-import pl.coderslab.project.entity.UserInfo;
-import pl.coderslab.project.service.ApiCallService;
+import pl.coderslab.project.dto.GitHubUserData;
+import pl.coderslab.project.dto.UserInfo;
+import pl.coderslab.project.exceptions.CustomException;
 import pl.coderslab.project.service.GitHubApiService;
+import pl.coderslab.project.service.UserService;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     private final GitHubApiService gitHubApiService;
-    private final ApiCallService apiCallService;
+    private final UserService userService;
     private final ObjectMapper objectMapper;
 
-    public UserController(GitHubApiService gitHubApiService, ApiCallService apiCallService, ObjectMapper objectMapper) {
+    @Autowired
+    public UserController(GitHubApiService gitHubApiService, UserService userService, ObjectMapper objectMapper) {
         this.gitHubApiService = gitHubApiService;
-        this.apiCallService = apiCallService;
+        this.userService = userService;
         this.objectMapper = objectMapper;
     }
 
     @GetMapping("/{login}")
     public ResponseEntity<String> getUser(@PathVariable String login) {
-        apiCallService.incrementRequestCount(login);
+        if (gitHubApiService == null) {
+            throw new CustomException("GitHubApiService is null");
+        }
 
-        GitHubUserData gitHubUserData = gitHubApiService.getGitHubUserData(login);
+
+        userService.incrementRequestCount(login);
+
+        GitHubUserData gitHubUserData = retryGetGitHubUserData(login);
 
         if (gitHubUserData == null) {
             return ResponseEntity.internalServerError()
                     .body("Nie udało się pobrać danych użytkownika GitHub.");
         }
 
-        double mian = gitHubUserData.getFollowers() * (2 + gitHubUserData.getPublicRepos());
+        double mianownik = gitHubUserData.getFollowers() * (2 + gitHubUserData.getPublicRepos());
         double calculations = 0;
-        if (mian != 0) {
-            calculations = 6.0 / mian;
+        if (mianownik != 0) {
+            calculations = 6.0 / mianownik;
         }
 
         // Tworzenie obiektu przechowującego odpowiednie dane
@@ -56,10 +64,9 @@ public class UserController {
                 gitHubUserData.getAvatarUrl(),
                 gitHubUserData.getCreatedAt(),
                 calculations
-        )
-        ;
+        );
 
-        ObjectMapper objectMapper = new ObjectMapper();
+
         objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 
         // Konwertujemy obiekt na JSON
@@ -72,5 +79,24 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Błąd podczas przetwarzania danych.");
         }
+    }
+
+    private GitHubUserData retryGetGitHubUserData(String login) {
+        int maxRetries = 5;
+        int retries = 0;
+        while (retries < maxRetries) {
+            try {
+                return gitHubApiService.getGitHubUserData(login);
+            } catch (CustomException e) {
+                // GitHubApiService zgłosił wyjątek, spróbuj ponownie za jakiś czas
+                retries++;
+                try {
+                    // Poczekaj 2 sekundy przed ponowną próbą
+                    Thread.sleep(2000);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        }
+        return null; // Próby ponowienia wyczerpały się
     }
 }

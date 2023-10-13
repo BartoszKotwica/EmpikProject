@@ -1,6 +1,5 @@
 package pl.coderslab.project.entity;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,10 +7,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-@Data
-@Entity
 @Getter
 @Setter
+@Entity
 @Table(name = "user")
 public class User {
     @Id
@@ -22,8 +20,7 @@ public class User {
     @NotNull
     @NotEmpty
     private String login;
-    @Column
+    @Column(columnDefinition = "int unsigned")
+    @NotNull
     private Long requestCount;
-
-
 }

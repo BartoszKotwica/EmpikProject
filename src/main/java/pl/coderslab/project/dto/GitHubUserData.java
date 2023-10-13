@@ -1,11 +1,12 @@
-package pl.coderslab.project.entity;
+package pl.coderslab.project.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
+import javax.persistence.Column;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 
@@ -13,11 +14,12 @@ import java.util.Date;
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GitHubUserData {
-    @NonNull
+    @NotNull
     private Long id;
-    @NonNull
+    @NotNull
+    @Column(length = 30)
     private String login;
-
+    @NotNull
     private String name;
 
     private String type;
